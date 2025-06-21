@@ -1,4 +1,3 @@
 local kickList = {
-    "", --make sure all the one player targets in here except the last one has a comma at the end
-    ""
+    "NLMBsourciety" --make sure all the one player targets in here except the last one has a comma at the end
 }
