@@ -1,6 +1,17 @@
+--Note Syntax matters (capitalization, numbers, other characters like "_") and make sure its the username not display name
+
 local kickList = {
-    "IJUSTWANTTOHACKPLZ" --make sure all the one player targets in here except the last one has a comma at the end
+    "7lo7",  -- ONLY TOUCH THE KICKLIST PART, make sure all the one player targets in here except the last one has a comma at the end also i dont think spacing for each line on the kicklist matters
+    "JackleTackleHD",
+    "DeathlyTobias",
+    "RWWomboCombo1",
+    "RWWomboCombo",
+    "SomGuyTobiasDev",
+    "ZeynetraMetra",
+    "PrisonDddyHolder",
+    "CoiCryzsis"
 }
+
 
 local toggleEnabled = true
 local toggle1Enabled = true
