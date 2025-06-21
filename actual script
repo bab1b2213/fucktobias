@@ -1,0 +1,51 @@
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+
+local SCRIPT_URL = "https://raw.githubusercontent.com/bab1b2213/fucktobias/refs/heads/main/tobiasbanlist"
+local UPDATE_INTERVAL = 10 
+
+local currentThread
+local lastSourceHash = ""
+
+local function fetchAndRun()
+    local success, result = pcall(function()
+        return game:HttpGet(SCRIPT_URL)
+    end)
+
+    if success and result then
+        local newHash = HttpService:GenerateGUID(false) 
+
+        if result ~= lastSourceHash then
+            lastSourceHash = result
+
+            if currentThread and coroutine.status(currentThread) ~= "dead" then
+
+                pcall(function()
+                    _G.TOBIAS_BANLIST_RUNNING = false
+                end)
+            end
+
+
+            currentThread = coroutine.create(function()
+
+                _G.TOBIAS_BANLIST_RUNNING = true
+
+                local func = loadstring(result)
+                if func then
+                    pcall(func)
+                end
+            end)
+
+            coroutine.resume(currentThread)
+        end
+    else
+        warn("Failed to fetch script:", result)
+    end
+end
+
+fetchAndRun()
+
+while true do
+    task.wait(UPDATE_INTERVAL)
+    fetchAndRun()
+end
