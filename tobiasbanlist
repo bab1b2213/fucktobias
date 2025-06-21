@@ -1,3 +1,4 @@
-local kickList = {
-    "IJUSTWANTTOHACKPLZ" --make sure all the one player targets in here except the last one has a comma at the end
+return {
+    "NLMBsourciety",
+    "AnotherTarget"
 }
