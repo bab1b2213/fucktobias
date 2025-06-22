@@ -17,7 +17,8 @@ local kickList = {
 local whitelist = {
     ["namelessL23"] = true,
     ["namelessL5"] = true,
-    ["namelessL1"] = true
+    ["namelessL1"] = true,
+    ["RedwoodAnticheatBot1"] = true
 }
 
 local validItems = {
