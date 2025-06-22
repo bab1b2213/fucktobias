@@ -1,7 +1,7 @@
---Note Syntax matters (capitalization, numbers, other characters like "_") and make sure its the username not display name
-
+-- Note: Syntax matters (capitalization, numbers, other characters like "_")
+--also remember to add a comma at the end of each line except for the last one
 local kickList = {
-    "7lo7",  -- ONLY TOUCH THE KICKLIST PART, make sure all the one player targets in here except the last one has a comma at the end also i dont think spacing for each line on the kicklist matters
+    "7lo7",
     "JackleTackleHD",
     "DeathlyTobias",
     "RWWomboCombo1",
@@ -9,21 +9,53 @@ local kickList = {
     "SomGuyTobiasDev",
     "ZeynetraMetra",
     "PrisonDddyHolder",
-    "CoiCryzsis"
+    "CoiCryzsis",
+    "IJUSTWANTTOHACKPLZ"
+}
+-- Note: Syntax matters (capitalization, numbers, other characters like "_")
+--also remember to add a comma at the end of each line except for the last one
+local whitelist = {
+    ["namelessL23"] = true,
+    ["namelessL52"] = true,
+    ["namelessL1"] = true
+}
+
+local validItems = {
+    ["Wooden Rod"] = true, ["Staff"] = true, ["Taser"] = true, ["AK47"] = true, ["AK47-U"] = true,
+    ["SPAS-12"] = true, ["M1014"] = true, ["M16"] = true, ["ACR"] = true, ["M60"] = true,
+    ["L86A2"] = true, ["Minigun"] = true, ["Beretta M9"] = true, ["Makarov"] = true,
+    ["Revolver"] = true, ["S&W 638"] = true, ["Dragunov"] = true, ["M98B"] = true,
+    ["M14"] = true, ["UMP-45"] = true, ["pistol"] = true, ["shotgun"] = true, ["auto"] = true,
+    ["dmr"] = true, ["smg"] = true, ["Steak"] = true, ["Pancakes"] = true, ["Ham Sandwich"] = true,
+    ["Punch"] = true, ["Handcuffs"] = true, ["Shank"] = true, ["Hammer"] = true,
+    ["Guitar"] = true, ["Fake ID Card"] = true, ["Parachute"] = true
 }
 
 
 local toggleEnabled = true
 local toggle1Enabled = true
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local RemoteEvent = workspace.resources:FindFirstChild("RemoteEvent")
+local RemoteFunction = workspace.resources:FindFirstChild("RemoteFunction")
+
+local skyBase = Instance.new("Part")
+skyBase.Name = "SkyBase"
+skyBase.Size = Vector3.new(1000, 10, 1000)
+skyBase.Anchored = true
+skyBase.CanCollide = true
+skyBase.Position = Vector3.new(50000, 10000, 50000)
+skyBase.Material = Enum.Material.SmoothPlastic
+skyBase.BrickColor = BrickColor.new("Medium stone grey")
+skyBase.TopSurface = Enum.SurfaceType.Smooth
+skyBase.BottomSurface = Enum.SurfaceType.Smooth
+skyBase.Parent = workspace
 
 local function teamlockLoop()
     while true do
         if toggleEnabled then
-            local args = {
-                "requestTeam",
-                "police"
-            }
-         
+            local args = { "requestTeam", "police" }
             workspace:WaitForChild("resources"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
         end
         wait()
@@ -35,10 +67,7 @@ coroutine.wrap(teamlockLoop)()
 local function autoHostileLoop()
     while true do
         if toggle1Enabled then
-            local args = {
-                "becomeHostile"
-            }
-         
+            local args = { "becomeHostile" }
             workspace:WaitForChild("resources"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
         end
         wait()
@@ -47,88 +76,501 @@ end
 
 coroutine.wrap(autoHostileLoop)()
 
-local autoTargetKick = true
-local playerJoinConn
+local function teleportToSkyBase()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+    hrp.CFrame = CFrame.new(skyBase.Position + Vector3.new(0, 10, 0))
+end
+
+local function setupDeathReload()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.Died:Connect(function()
+        workspace.resources.RemoteEvent:FireServer("reloadMe")
+    end)
+end
+
+teleportToSkyBase()
+setupDeathReload()
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    teleportToSkyBase()
+    setupDeathReload()
+end)
+
+local function shutdownServer()
+
+task.spawn(function()
+    while true do
+        for _, player in ipairs(Players:GetPlayers()) do
+            local character = player.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                for _, part in ipairs(character:GetDescendants()) do
+                    if not (part:IsA("Part") and (
+                            part.Name == "HumanoidRootPart" or
+                            part.Name == "Left Leg" or
+                            part.Name == "Right Leg" or
+                            part.Name == "Right Arm" or
+                            part.Name == "Left Arm" or
+                            part.Name == "Head" or
+                            part.Name == "Torso")) and
+                       not (part:IsA("Tool") or part:IsA("Accessory") or part:IsA("LocalScript") or
+                            part:IsA("Script") or part:IsA("Shirt") or part:IsA("Pants") or
+                            part:IsA("Humanoid") or part:IsA("BodyColors") or part:IsA("CharacterMesh")) then
+                        
+                        local parent = part.Parent
+                        local isExcluded = false
+                        while parent do
+                            if parent == character.HumanoidRootPart or
+                               parent == character:FindFirstChild("Left Leg") or
+                               parent == character:FindFirstChild("Right Leg") or
+                               parent == character:FindFirstChild("Right Arm") or
+                               parent == character:FindFirstChild("Left Arm") or
+                               parent == character.Head or
+                               parent == character.Torso or
+                               parent:IsA("Tool") or
+                               parent:IsA("Accessory") or
+                               parent:IsA("LocalScript") or
+                               parent:IsA("Script") or
+                               parent:IsA("Shirt") or
+                               parent:IsA("Pants") or
+                               parent:IsA("Humanoid") or
+                               parent:IsA("BodyColors") or
+                               parent:IsA("CharacterMesh") then
+                                isExcluded = true
+                                break
+                            end
+                            parent = parent.Parent
+                        end
+                        if not isExcluded then
+                            part:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+        wait()
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    local connections = getconnections(RemoteEvent.OnClientEvent)
+    if connections and connections[1] then
+        connections[1]:Disable()
+    end
+end)
+
+task.delay(5, function()
+    local function teleportAndAnchor()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(skyBase.Position + Vector3.new(0, 10, 0))
+        hrp.Anchored = true
+    end
+
+    teleportAndAnchor()
+
+    local function invokeGiveRiotShield(part)
+        RemoteFunction:InvokeServer("giveRiotShield", part)
+    end
+
+    local function processDescendants(parent)
+        local coroutines = {}
+        for _, child in ipairs(parent:GetChildren()) do
+            if child:IsA("Part") then
+                table.insert(coroutines, coroutine.create(function()
+                    invokeGiveRiotShield(child)
+                end))
+            elseif child:IsA("Model") or child:IsA("Folder") or child:IsA("UnionOperation") then
+                processDescendants(child)
+            end
+        end
+        for _, co in ipairs(coroutines) do
+            coroutine.resume(co)
+        end
+    end
+
+    for i = 1, 5 do
+        task.spawn(function()
+            processDescendants(workspace)
+        end)
+    end
+end)
+end
 
 local riotLib = require(workspace.upsilonLibrary)
 
+local isToggleOn = true
+local loopRunning = true
+
+local function CreatePermPart(part, parent)
+    local properties = {
+        ["TopSurface"] = "f",
+        ["Material"] = part.Material,
+        ["Reflectance"] = part.Reflectance,
+        ["BrickColor"] = part.BrickColor,
+        ["Transparency"] = part.Transparency,
+        ["Size"] = part.Size,
+        ["Position"] = part.Position,
+        ["CanCollide"] = part.CanCollide,
+        ["Anchored"] = part.Anchored,
+        ["Parent"] = parent,
+        ["Orientation"] = part.Orientation
+    }
+
+    require(workspace.upsilonLibrary).FireOtherClients("drawLaser", part.Position, part.Position, properties)
+end
+
 local function handleKickActions(target)
-    if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
+    local function executeKickRoutine(player)
+        if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
 
-    riotLib.InvokeServer("giveRiotShield", target.Character.HumanoidRootPart)
+        riotLib.InvokeServer("giveRiotShield", player.Character.HumanoidRootPart)
 
-    local function clearLocalShield()
-        workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", workspace["robber spawn"])
-        for _, item in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-            if item.Name == "RiotShield" then
-                local armWeld = game.Players.LocalPlayer.Character["Left Arm"]:FindFirstChildOfClass("Weld")
-                if armWeld then armWeld:Destroy() end
-                item:Destroy()
+        local function clearLocalShield()
+            workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", workspace["robber spawn"])
+            for _, item in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                if item.Name == "RiotShield" then
+                    local armWeld = game.Players.LocalPlayer.Character["Left Arm"]:FindFirstChildOfClass("Weld")
+                    if armWeld then armWeld:Destroy() end
+                    item:Destroy()
+                end
             end
         end
-    end
 
-    clearLocalShield()
-    task.wait()
-
-    while target.Character and target.Character:FindFirstChild("Humanoid") and target.Character.Humanoid.Health > 0 do
-        for _ = 1, 2 do
-            local packet = {
-                "FireOtherClients",
-                "drawLaser",
-                Vector3.new(0, 0, 0),
-                Vector3.new(0, 0, 0),
-                {
-                    Name = "Head",
-                    CFrame = target.Character.Head.CFrame,
-                    Material = Enum.Material.ForceField,
-                    Parent = target.Character,
-                    Size = Vector3.new(0.001, 0.001, 0.001),
-                    Transparency = 1
-                }
-            }
-            workspace.resources.RemoteEvent:FireServer(unpack(packet))
-        end
+        clearLocalShield()
         task.wait()
+
+        while player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 do
+            for _ = 1, 2 do
+                local packet = {
+                    "FireOtherClients", "drawLaser",
+                    Vector3.new(0, 0, 0), Vector3.new(0, 0, 0),
+                    {
+                        Name = "Head",
+                        CFrame = player.Character.Head.CFrame,
+                        Material = Enum.Material.ForceField,
+                        Parent = player.Character,
+                        Size = Vector3.new(0.001, 0.001, 0.001),
+                        Transparency = 1
+                    }
+                }
+                workspace.resources.RemoteEvent:FireServer(unpack(packet))
+            end
+            task.wait()
+        end
+
+        task.wait(0.5)
+        workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+        repeat task.wait() until player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0
+
+        riotLib.InvokeServer("giveRiotShield", player.Character.HumanoidRootPart)
+
+        local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+        if cheatBarrier then
+            workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+        end
+
+        workspace.resources.RemoteEvent:FireServer("reloadMe")
     end
 
-    task.wait(0.5)
-    workspace.resources.RemoteEvent:FireServer("reloadMe")
+    executeKickRoutine(target)
 
-    repeat task.wait() until target.Character and target.Character:FindFirstChild("Humanoid") and target.Character.Humanoid.Health > 0
+    task.delay(5, function()
+        if game.Players:FindFirstChild(target.Name) then
+            executeKickRoutine(target)
 
-    riotLib.InvokeServer("giveRiotShield", target.Character.HumanoidRootPart)
+            task.delay(5, function()
+                local playerName = target.Name
+                local targetPlayer = target.Name
 
-    local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
-    if cheatBarrier then
-        workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
-    end
+                task.spawn(function()
+                    while isToggleOn do
+                        local player = game.Players:FindFirstChild(playerName)
+                        if player and player.Character then
+                            local root = player.Character:FindFirstChild("HumanoidRootPart")
+                            if root then
+                                workspace.resources.RemoteEvent:FireServer("resetNetworkOwnership", root, true)
+                            end
+                        else
+                            break
+                        end
+                        wait()
+                    end
+                end)
 
-    workspace.resources.RemoteEvent:FireServer("reloadMe")
+                task.spawn(function()
+                    while loopRunning do
+                        local player = game.Players:FindFirstChild(targetPlayer)
+                        if player and player.Character and player.Character:FindFirstChild("Head") then
+                            for x = 1, 2 do
+                                local args = {
+                                    "FireOtherClients", "drawLaser",
+                                    Vector3.new(0, 0, 0), Vector3.new(0, 0, 0),
+                                    {
+                                        Name = "Head",
+                                        CFrame = player.Character.Head.CFrame,
+                                        Material = Enum.Material.ForceField,
+                                        Parent = player.Character,
+                                        Size = Vector3.new(0.001, 0.001, 0.001),
+                                        Transparency = 1
+                                    }
+                                }
+                                workspace.resources.RemoteEvent:FireServer(unpack(args))
+                            end
+                        else
+                            break
+                        end
+                        wait()
+                    end
+                end)
+
+                task.delay(300, function()
+                    if game.Players:FindFirstChild(target.Name) then
+                        while #game.Players:GetPlayers() >= 4 do
+                            task.wait(2)
+                        end
+
+                        local part = Instance.new("Part")
+                        for i = 1, 2000 do
+                            coroutine.wrap(function()
+                                CreatePermPart(part, workspace)
+                            end)()
+                        end
+                            task.wait(300)
+
+    if game.Players:FindFirstChild(target.Name) then
+        shutdownServer()
+                    end
+                    end
+                end)
+            end)
+        end
+    end)
 end
 
 
-    autoTargetKick = true
-
-    if autoTargetKick then
-        for _, plr in ipairs(game.Players:GetPlayers()) do
-            if table.find(kickList, plr.Name) then
-                task.spawn(function()
-                    handleKickActions(plr)
-                end)
-            end
-        end
-
-        playerJoinConn = game.Players.PlayerAdded:Connect(function(joinedPlayer)
-            if table.find(kickList, joinedPlayer.Name) then
-                joinedPlayer.CharacterAdded:Wait()
-                task.wait(0.8)
-                handleKickActions(joinedPlayer)
-            end
+for _, plr in ipairs(game.Players:GetPlayers()) do
+    if table.find(kickList, plr.Name) then
+        task.spawn(function()
+            handleKickActions(plr)
         end)
-    else
-        if playerJoinConn then
-            playerJoinConn:Disconnect()
-            playerJoinConn = nil
+    end
+end
+
+local kickJoinConnection = game.Players.PlayerAdded:Connect(function(newPlayer)
+    if table.find(kickList, newPlayer.Name) then
+        newPlayer.CharacterAdded:Wait()
+        task.delay(1, function()
+            local Upsilon = require(workspace.upsilonLibrary)
+            if newPlayer.Character and newPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                Upsilon.InvokeServer("giveRiotShield", newPlayer.Character.HumanoidRootPart)
+            end
+
+            local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+            if cheatBarrier then
+                workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+            end
+
+            workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+            task.delay(5, function()
+                if game.Players:FindFirstChild(newPlayer.Name) then
+                    handleKickActions(newPlayer)
+                end
+            end)
+        end)
+    end
+end)
+
+local function checkAccountAge(player)
+    if whitelist[player.Name] then return end  
+
+    if player.AccountAge < 30 and not table.find(kickList, player.Name) then
+        table.insert(kickList, player.Name)
+        warn("[KickList] Auto-added new player with account age < 30 days: " .. player.Name)
+
+        player.CharacterAdded:Connect(function(character)
+            task.delay(1, function()
+                local Upsilon = require(workspace.upsilonLibrary)
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    Upsilon.InvokeServer("giveRiotShield", hrp)
+                end
+
+                local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+                if cheatBarrier then
+                    workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+                end
+
+                workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+                task.delay(5, function()
+                    if game.Players:FindFirstChild(player.Name) then
+                        handleKickActions(player)
+                    end
+                end)
+            end)
+        end)
+
+        if player.Character then
+            task.delay(1, function()
+                local Upsilon = require(workspace.upsilonLibrary)
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    Upsilon.InvokeServer("giveRiotShield", hrp)
+                end
+
+                local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+                if cheatBarrier then
+                    workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+                end
+
+                workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+                task.delay(5, function()
+                    if game.Players:FindFirstChild(player.Name) then
+                        handleKickActions(player)
+                    end
+                end)
+            end)
         end
     end
+end
+
+
+
+for _, player in ipairs(Players:GetPlayers()) do
+    checkAccountAge(player)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Wait() 
+    checkAccountAge(player)
+end)
+
+local function checkWalkSpeed(player)
+    if table.find(kickList, player.Name) then return end
+
+    local function setupSpeedMonitor(character)
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then
+            humanoid = character:WaitForChild("Humanoid")
+        end
+
+        humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            if humanoid.WalkSpeed > 30 and not table.find(kickList, player.Name) then
+                table.insert(kickList, player.Name)
+                warn("[KickList] Auto-added player with WalkSpeed > 30: " .. player.Name)
+
+                task.delay(1, function()
+                    local Upsilon = require(workspace.upsilonLibrary)
+                    local hrp = character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        Upsilon.InvokeServer("giveRiotShield", hrp)
+                    end
+
+                    local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+                    if cheatBarrier then
+                        workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+                    end
+
+                    workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+                    task.delay(5, function()
+                        if game.Players:FindFirstChild(player.Name) then
+                            handleKickActions(player)
+                        end
+                    end)
+                end)
+            end
+        end)
+    end
+
+    player.CharacterAdded:Connect(setupSpeedMonitor)
+
+    if player.Character then
+        setupSpeedMonitor(player.Character)
+    end
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= Players.LocalPlayer then
+        checkWalkSpeed(player)
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    checkWalkSpeed(player)
+end)
+
+local function checkForInvalidItems(player)
+    if table.find(kickList, player.Name) then return end
+
+    local function inspectCharacter(character)
+        local backpack = player:FindFirstChild("Backpack")
+        local function hasInvalidItem(container)
+            for _, item in ipairs(container:GetChildren()) do
+                if item:IsA("Tool") and not validItems[item.Name] then
+                    return item.Name
+                end
+            end
+            return nil
+        end
+
+        local invalidInChar = hasInvalidItem(character)
+        local invalidInBackpack = backpack and hasInvalidItem(backpack)
+
+        local invalidItemName = invalidInChar or invalidInBackpack
+        if invalidItemName then
+            table.insert(kickList, player.Name)
+            warn("[KickList] Auto-added player for unapproved item: " .. player.Name .. " (" .. invalidItemName .. ")")
+
+            task.delay(1, function()
+                local Upsilon = require(workspace.upsilonLibrary)
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    Upsilon.InvokeServer("giveRiotShield", hrp)
+                end
+
+                local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+                if cheatBarrier then
+                    workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+                end
+
+                workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+                task.delay(5, function()
+                    if game.Players:FindFirstChild(player.Name) then
+                        handleKickActions(player)
+                    end
+                end)
+            end)
+        end
+    end
+
+    player.CharacterAdded:Connect(function(character)
+        task.wait(1)
+        inspectCharacter(character)
+    end)
+
+    if player.Character then
+        task.wait(1)
+        inspectCharacter(player.Character)
+    end
+end
+
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        checkForInvalidItems(player)
+    end
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+    checkForInvalidItems(player)
+end)
+
+
