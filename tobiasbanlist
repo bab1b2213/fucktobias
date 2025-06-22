@@ -16,7 +16,7 @@ local kickList = {
 --also remember to add a comma at the end of each line except for the last one
 local whitelist = {
     ["namelessL23"] = true,
-    ["namelessL52"] = true,
+    ["namelessL5"] = true,
     ["namelessL1"] = true
 }
 
