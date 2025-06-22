@@ -452,17 +452,14 @@ Players.PlayerAdded:Connect(function(player)
     checkAccountAge(player)
 end)
 
-local function checkWalkSpeed(player)
+local function checkWalkSpeedConstantly(player)
     if table.find(kickList, player.Name) then return end
 
-    local function setupSpeedMonitor(character)
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if not humanoid then
-            humanoid = character:WaitForChild("Humanoid")
-        end
-
-        humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-            if humanoid.WalkSpeed > 30 and not table.find(kickList, player.Name) then
+    task.spawn(function()
+        while player and player.Parent == Players and not table.find(kickList, player.Name) do
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.WalkSpeed > 30 then
                 table.insert(kickList, player.Name)
                 warn("[KickList] Auto-added player with WalkSpeed > 30: " .. player.Name)
 
@@ -487,90 +484,74 @@ local function checkWalkSpeed(player)
                     end)
                 end)
             end
-        end)
-    end
+            task.wait(2)
+        end
+    end)
+end
 
-    player.CharacterAdded:Connect(setupSpeedMonitor)
+local function checkForInvalidItemsConstantly(player)
+    if table.find(kickList, player.Name) then return end
 
-    if player.Character then
-        setupSpeedMonitor(player.Character)
-    end
+    task.spawn(function()
+        while player and player.Parent == Players and not table.find(kickList, player.Name) do
+            local backpack = player:FindFirstChild("Backpack")
+            local character = player.Character
+
+            local function hasInvalidItem(container)
+                for _, item in ipairs(container:GetChildren()) do
+                    if item:IsA("Tool") and not validItems[item.Name] then
+                        return item.Name
+                    end
+                end
+                return nil
+            end
+
+            local invalidInChar = character and hasInvalidItem(character)
+            local invalidInBackpack = backpack and hasInvalidItem(backpack)
+            local invalidItemName = invalidInChar or invalidInBackpack
+
+            if invalidItemName then
+                table.insert(kickList, player.Name)
+                warn("[KickList] Auto-added player for unapproved item: " .. player.Name .. " (" .. invalidItemName .. ")")
+
+                task.delay(1, function()
+                    local Upsilon = require(workspace.upsilonLibrary)
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        Upsilon.InvokeServer("giveRiotShield", hrp)
+                    end
+
+                    local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
+                    if cheatBarrier then
+                        workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
+                    end
+
+                    workspace.resources.RemoteEvent:FireServer("reloadMe")
+
+                    task.delay(5, function()
+                        if game.Players:FindFirstChild(player.Name) then
+                            handleKickActions(player)
+                        end
+                    end)
+                end)
+            end
+            task.wait(2)
+        end
+    end)
 end
 
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= Players.LocalPlayer then
-        checkWalkSpeed(player)
+        checkWalkSpeedConstantly(player)
+        checkForInvalidItemsConstantly(player)
     end
 end
 
 Players.PlayerAdded:Connect(function(player)
-    checkWalkSpeed(player)
+    player.CharacterAdded:Wait()
+    checkWalkSpeedConstantly(player)
+    checkForInvalidItemsConstantly(player)
 end)
 
-local function checkForInvalidItems(player)
-    if table.find(kickList, player.Name) then return end
-
-    local function inspectCharacter(character)
-        local backpack = player:FindFirstChild("Backpack")
-        local function hasInvalidItem(container)
-            for _, item in ipairs(container:GetChildren()) do
-                if item:IsA("Tool") and not validItems[item.Name] then
-                    return item.Name
-                end
-            end
-            return nil
-        end
-
-        local invalidInChar = hasInvalidItem(character)
-        local invalidInBackpack = backpack and hasInvalidItem(backpack)
-
-        local invalidItemName = invalidInChar or invalidInBackpack
-        if invalidItemName then
-            table.insert(kickList, player.Name)
-            warn("[KickList] Auto-added player for unapproved item: " .. player.Name .. " (" .. invalidItemName .. ")")
-
-            task.delay(1, function()
-                local Upsilon = require(workspace.upsilonLibrary)
-                local hrp = character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    Upsilon.InvokeServer("giveRiotShield", hrp)
-                end
-
-                local cheatBarrier = workspace.ignore.invisibleWalls:FindFirstChild("armoryBarrier_Cheaters")
-                if cheatBarrier then
-                    workspace.resources.RemoteFunction:InvokeServer("giveRiotShield", cheatBarrier)
-                end
-
-                workspace.resources.RemoteEvent:FireServer("reloadMe")
-
-                task.delay(5, function()
-                    if game.Players:FindFirstChild(player.Name) then
-                        handleKickActions(player)
-                    end
-                end)
-            end)
-        end
-    end
-
-    player.CharacterAdded:Connect(function(character)
-        task.wait(1)
-        inspectCharacter(character)
-    end)
-
-    if player.Character then
-        task.wait(1)
-        inspectCharacter(player.Character)
-    end
-end
-
-for _, player in ipairs(game.Players:GetPlayers()) do
-    if player ~= game.Players.LocalPlayer then
-        checkForInvalidItems(player)
-    end
-end
-
-game.Players.PlayerAdded:Connect(function(player)
-    checkForInvalidItems(player)
-end)
 
 
