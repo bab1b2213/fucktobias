@@ -1,3 +1,8 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+
+
 -- Note: Syntax matters (capitalization, numbers, other characters like "_")
 --also remember to add a comma at the end of each line except for the last one
 local kickList = {
@@ -17,9 +22,10 @@ local kickList = {
 local whitelist = {
     ["namelessL23"] = true,
     ["namelessL5"] = true,
-    ["namelessL1"] = true,
-    ["RedwoodAnticheatBot1"] = true
+    ["namelessL1"] = true
 }
+
+whitelist[LocalPlayer.Name] = true
 
 local validItems = {
     ["Wooden Rod"] = true, ["Staff"] = true, ["Taser"] = true, ["AK47"] = true, ["AK47-U"] = true,
